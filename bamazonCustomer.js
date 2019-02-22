@@ -29,26 +29,89 @@ connection.query("SELECT item_id, product_name, price FROM products", function(e
   if (err) throw err;
   console.log("\nProducts:\n");
   console.log(res);
+  console.log("\n");
+  
+
+  
 })
+ask();
 
 };
 
 
-
 function ask() {
+  connection.query("SELECT * FROM products", function(err, results) {
+    if (err) throw err;
+
   inquirer
-    .prompt({
-      name: "whatID",
-      type: "input",
-      message: "What is the ID of the product you want to purchase?"
+    .prompt([
+      {
+        name: "whatID",
+        type: "input",
+        message: "What is the item_id of the product you want to purchase?"
       },
       {
         name: "howMuch",
         type: "input",
-        message: "How many units would you like to purchase?"
+        message: "How many units would you like to buy?"
+      }
+    ])
+    .then(function(answer) {
+        
+
+        var chosenID = answer.whatID;
+        var chosenQuantity = answer.howMuch;
+        var chosenProduct = results[chosenID - 1];
+        var stockQuantity = chosenProduct.stock_quantity;
+        var totalPrice = (chosenQuantity * chosenProduct.price);
+        
+
+        if (chosenQuantity <= stockQuantity) {
+          stockQuantity = stockQuantity - chosenQuantity;
+          chosenProduct.stock_quantity = stockQuantity;
+          console.log("Order Successful!");
+          console.log("Order price: $" + totalPrice);
+          console.log("\n");
+          console.log(stockQuantity + " units left in stock");
+          console.log("\n");
+
+          orderAgain();
+        }
+
+        else {console.log("Insufficent Quantity");
+        console.log("\n");
+              orderAgain();}
+
+        
+
+        // console.log(chosenProduct);
+        // console.log(chosenProduct.stock_quantity);
+        // console.log(quantity);
       })
+
+    })
+  
+  function orderAgain() {
+    inquirer
+      .prompt({
+        name: "orderAgain",
+        type: "rawlist",
+        choices: ["Yes", "No"],
+        message: "Make another order?"
+      })
+      .then(function(answer) {
+        if ((answer.orderAgain) === "Yes") {
+          ask();
+        }
+        else (console.log("Have a good day!")); 
+      })
+  }
+ 
+  }
+
+
     
-};
+      
 
 
 
